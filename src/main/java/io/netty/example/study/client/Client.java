@@ -1,5 +1,6 @@
-package io.netty.example.study.server;
+package io.netty.example.study.client;
 
+import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -7,11 +8,13 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.example.study.server.codec.OrderFrameDecoder;
-import io.netty.example.study.server.codec.OrderFrameEncoder;
-import io.netty.example.study.server.codec.OrderProtocoDecoder;
-import io.netty.example.study.server.codec.OrderProtocoEncoder;
-import io.netty.example.study.server.handler.OrderServerProcessHandler;
+import io.netty.example.study.client.codec.OrderFrameDecoder;
+import io.netty.example.study.client.codec.OrderFrameEncoder;
+import io.netty.example.study.client.codec.OrderProtocoDecoder;
+import io.netty.example.study.client.codec.OrderProtocoEncoder;
+import io.netty.example.study.common.RequestMessage;
+import io.netty.example.study.order.OrderOperation;
+import io.netty.example.study.util.IdUtil;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
@@ -20,16 +23,14 @@ import java.util.concurrent.ExecutionException;
 /**
  * Created by Administrator on 2020/1/29/029.
  */
-public class Server {
+public class Client {
 
     public static void main(String[] args) throws InterruptedException, ExecutionException {
-        ServerBootstrap serverBootstrap = new ServerBootstrap();
-        serverBootstrap.channel(NioServerSocketChannel.class);
-        //在父group中增加log
-        serverBootstrap.handler(new LoggingHandler(LogLevel.INFO));
-        serverBootstrap.group(new NioEventLoopGroup());
+        Bootstrap bootstrap = new Bootstrap();
+        bootstrap.channel(NioSocketChannel.class);
+        bootstrap.group(new NioEventLoopGroup());
 
-        serverBootstrap.childHandler(new ChannelInitializer<NioSocketChannel>() {
+        bootstrap.handler(new ChannelInitializer<NioSocketChannel>() {
             @Override
             protected void initChannel(NioSocketChannel nioSocketChannel) throws Exception {
                 ChannelPipeline pipeline = nioSocketChannel.pipeline();
@@ -38,11 +39,14 @@ public class Server {
                 pipeline.addLast(new OrderProtocoEncoder());
                 pipeline.addLast(new OrderProtocoDecoder());
                 pipeline.addLast(new LoggingHandler(LogLevel.INFO));
-                pipeline.addLast(new OrderServerProcessHandler());
             }
         });
 
-        ChannelFuture sync = serverBootstrap.bind(9090).sync();
+        ChannelFuture sync = bootstrap.connect("127.0.0.1",9090);
+        sync.sync();
+        RequestMessage requestMessage = new RequestMessage(IdUtil.nextId(), new OrderOperation(1001, "tudou"));
+
+        sync.channel().writeAndFlush(requestMessage);
         sync.channel().closeFuture().get();
     }
 }

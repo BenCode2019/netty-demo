@@ -28,6 +28,15 @@ public abstract class Message<T extends MessageBody> {
         byteBuf.writeInt(messageHeader.getVersion());
         byteBuf.writeLong(messageHeader.getStreamId());
         byteBuf.writeInt(messageHeader.getOpCode());
+        byteBuf.writeBytes(JsonUtil.toJson(messageBody).getBytes());
+
+
+//        int i = byteBuf.readInt();
+//        System.out.println(i);
+//        long l = byteBuf.readLong();
+//        System.out.println(l);
+//        int i1 = byteBuf.readInt();
+//        System.out.println(i1);
     }
 
     public abstract Class<T> getMessageBodyDecodeClass(int opcode);

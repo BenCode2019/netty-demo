@@ -21,6 +21,7 @@ public class OrderOperation extends Operation {
         this.orderMsg = orderMsg;
     }
 
+    @Override
     public OperationResult execute() {
         log.info("接收到指令：" + orderMsg);
         //execute order logic

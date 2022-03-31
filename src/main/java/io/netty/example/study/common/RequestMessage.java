@@ -10,6 +10,7 @@ public class RequestMessage extends Message<Operation> {
 
     }
 
+    @Override
     public Class getMessageBodyDecodeClass(int opcode) {
         return OperationType.fromOpcode(opcode).getOperationClazz();
     }

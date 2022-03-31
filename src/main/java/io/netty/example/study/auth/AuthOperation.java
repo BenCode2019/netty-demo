@@ -19,6 +19,7 @@ public class AuthOperation extends Operation {
     private String simpleUserName = "admin";
 
 
+    @Override
     public OperationResult execute() {
         if (simpleUserName.equalsIgnoreCase(this.userName)) {
             AuthOperationResult authOperationResponse = new AuthOperationResult(true);
